@@ -1,0 +1,21 @@
+{
+  "name": "hennesypoc",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@aws-sdk/client-bedrock-data-automation": "^3.804.0",
+    "@aws-sdk/client-bedrock-data-automation-runtime": "^3.804.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "multer": "^1.4.5-lts.2",
+    "nodemon": "^3.1.10"
+  }
+}
