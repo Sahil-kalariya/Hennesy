@@ -9,13 +9,13 @@ const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
  * Configure input for the Bedrock Data Automation job
  * @returns {Object} Job input configuration
  */
-const getJobInput = () => {
+const getJobInput = (s3url) => {
   const DATA_AUTOMATION_PROFILE_ARN = process.env.DATA_AUTOMATION_PROFILE_ARN;
   console.log("Using Data Automation Profile:", DATA_AUTOMATION_PROFILE_ARN);
   
   return {
     inputConfiguration: {
-      s3Uri: "s3://bda-input-bucket-9876/Used_Car_Trade.pdf",
+      s3Uri: s3url,
     },
     outputConfiguration: {
       s3Uri: "s3://bda-output-9876/output/",
@@ -39,9 +39,13 @@ const getJobInput = () => {
  */
 const analyzeFile = async (req, res) => {
   try {
+    console.log("analyze");
+    
     // Initialize client and job input
     const client = createBedrockClient();
-    const input = getJobInput();
+    console.log("this is s3url")
+    console.log(req.fileUrl)
+    const input = getJobInput(req.fileUrl);
     
     // Start the data automation job
     console.log("Starting data automation job...");
