@@ -9,13 +9,13 @@ const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
  * Configure input for the Bedrock Data Automation job
  * @returns {Object} Job input configuration
  */
-const getJobInput = () => {
+const getJobInput = (s3url) => {
   const DATA_AUTOMATION_PROFILE_ARN = process.env.DATA_AUTOMATION_PROFILE_ARN;
   console.log("Using Data Automation Profile:", DATA_AUTOMATION_PROFILE_ARN);
   
   return {
     inputConfiguration: {
-      s3Uri: "s3://bda-input-bucket-9876/Used_Car_Trade.pdf",
+      s3Uri: s3url,
     },
     outputConfiguration: {
       s3Uri: "s3://bda-output-9876/output/",
@@ -41,8 +41,8 @@ const analyzeFile = async (req, res) => {
   try {
     // Initialize client and job input
     const client = createBedrockClient();
-    const input = getJobInput();
-    
+    const input = getJobInput(req.S3url);
+    console.log(input)
     // Start the data automation job
     console.log("Starting data automation job...");
     const invokeCommand = new InvokeDataAutomationAsyncCommand(input);
@@ -195,18 +195,57 @@ const getResultJsonUri = (originalUri) => {
  * @param {string} s3Uri - S3 URI pointing to the result.json file
  * @returns {Promise<Object>} Parsed JSON content from the result file
  */
+// const fetchResultFromS3 = async (s3Uri) => {
+//   try {
+//     // Parse the S3 URI to extract bucket and key
+//     // Format is s3://bucket-name/path/to/file
+//     const url = new URL(s3Uri.replace('s3://', 'https://'));
+//     const bucket = url.hostname;
+//     const key = url.pathname.substring(1); // Remove leading slash
+    
+//     console.log(`Fetching result from S3 - Bucket: "${bucket}", Key: "${key}"`);
+    
+//     // Create S3 client (configure region as needed)
+//     const s3Client = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+    
+//     const command = new GetObjectCommand({
+//       Bucket: bucket,
+//       Key: key
+//     });
+    
+//     const response = await s3Client.send(command);
+    
+//     // Convert stream to string
+//     const bodyContents = await streamToString(response.Body);
+    
+//     // Parse JSON
+//     const result = JSON.parse(bodyContents)
+//     return result.inference_result;
+//   } catch (error) {
+//     console.error(`Error fetching from S3: ${error}`);
+//     throw error;
+//   }
+// };
+
 const fetchResultFromS3 = async (s3Uri) => {
   try {
     // Parse the S3 URI to extract bucket and key
-    // Format is s3://bucket-name/path/to/file
     const url = new URL(s3Uri.replace('s3://', 'https://'));
     const bucket = url.hostname;
     const key = url.pathname.substring(1); // Remove leading slash
     
     console.log(`Fetching result from S3 - Bucket: "${bucket}", Key: "${key}"`);
     
-    // Create S3 client (configure region as needed)
-    const s3Client = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+    // Option 1: Use the same credentials as your Bedrock client
+    // This is the most reliable approach if Bedrock works but S3 doesn't
+    const bedrock = createBedrockClient(); // Use your existing Bedrock client creation function
+    const credentials = bedrock.config.credentials;
+    
+    // Create S3 client with the same credentials as Bedrock
+    const s3Client = new S3Client({ 
+      region: process.env.AWS_REGION || 'us-east-1',
+      credentials: credentials
+    });
     
     const command = new GetObjectCommand({
       Bucket: bucket,
@@ -219,13 +258,14 @@ const fetchResultFromS3 = async (s3Uri) => {
     const bodyContents = await streamToString(response.Body);
     
     // Parse JSON
-    const result = JSON.parse(bodyContents)
+    const result = JSON.parse(bodyContents);
     return result.inference_result;
   } catch (error) {
     console.error(`Error fetching from S3: ${error}`);
     throw error;
   }
 };
+
 
 /**
  * Helper function to convert stream to string

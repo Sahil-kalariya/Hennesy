@@ -9,7 +9,7 @@ PORT = process.env.PORT
 
 
 
-app.use("/bedrock" , bedrockRoutes)
+app.use("/api" , bedrockRoutes)
 
 
 app.listen(PORT , ()=>{

@@ -4,11 +4,10 @@ function createBedrockClient() {
     const {
         AWS_ACCESS_KEY_ID,
         AWS_SECRET_ACCESS_KEY,
-        AWS_SESSION_TOKEN,
         REGION
     } = process.env;
 
-    if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY || !AWS_SESSION_TOKEN || !REGION) {
+    if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY || !REGION) {
         throw new Error("Missing AWS credentials or region in environment variables.");
     }
 
@@ -17,7 +16,7 @@ function createBedrockClient() {
         credentials: {
             accessKeyId: AWS_ACCESS_KEY_ID,
             secretAccessKey: AWS_SECRET_ACCESS_KEY,
-            sessionToken: AWS_SESSION_TOKEN
+      
         }
     };
 
