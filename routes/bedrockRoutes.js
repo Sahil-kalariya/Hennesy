@@ -5,6 +5,6 @@ const { filehandler } = require('../middleware/filehandler');
 const router = express.Router();
 const { dataValidator } = require('../controllers/dataValidator');
 
-router.post("/", upload.single("file"), filehandler, analyzeFile, dataValidator);
+router.post("/:id", upload.single("file"), filehandler, analyzeFile, dataValidator);
 
 module.exports = router;

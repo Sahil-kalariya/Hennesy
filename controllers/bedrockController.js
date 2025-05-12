@@ -9,10 +9,28 @@ const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
  * Configure input for the Bedrock Data Automation job
  * @returns {Object} Job input configuration
  */
-const getJobInput = (s3url) => {
+
+const getJobInput = (s3url,id) => {
+  let Blueprint;
+  console.log(id);
+  
   const DATA_AUTOMATION_PROFILE_ARN = process.env.DATA_AUTOMATION_PROFILE_ARN;
   console.log("Using Data Automation Profile:", DATA_AUTOMATION_PROFILE_ARN);
-  
+  if(id==='1'){
+    Blueprint= {
+      blueprintArn: "arn:aws:bedrock:us-east-1:943143228843:blueprint/4b2f9dea25d4",
+      version: "2",
+      stage: "LIVE",
+    }
+  }
+  if(id==='2'){
+    Blueprint= {
+      blueprintArn: "arn:aws:bedrock:us-east-1:943143228843:blueprint/cfded66e2534",
+      version: "2",
+      stage: "LIVE",
+    }
+  }
+  console.log(Blueprint)
   return {
     inputConfiguration: {
       s3Uri: s3url,
@@ -20,13 +38,7 @@ const getJobInput = (s3url) => {
     outputConfiguration: {
       s3Uri: "s3://bda-output-9876/output/",
     },
-    blueprints: [
-      {
-        blueprintArn: "arn:aws:bedrock:us-east-1:943143228843:blueprint/4b2f9dea25d4",
-        version: "1",
-        stage: "LIVE",
-      },
-    ],
+    blueprints:[Blueprint],
     dataAutomationProfileArn: DATA_AUTOMATION_PROFILE_ARN
   };
 };
@@ -38,10 +50,14 @@ const getJobInput = (s3url) => {
  * @returns {Promise<Object>} Response with job status and results
  */
 const analyzeFile = async (req, res,next) => {
+  let paramId;
+  paramId=req.params.id
+  console.log(paramId);
+  
   try {
     // Initialize client and job input
     const client = createBedrockClient();
-    const input = getJobInput(req.S3url);
+    const input = getJobInput(req.S3url,paramId);
     console.log(input)
     // Start the data automation job
     console.log("Starting data automation job...");

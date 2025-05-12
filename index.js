@@ -7,9 +7,7 @@ dotenv.config()
 PORT = process.env.PORT
 
 
-
-
-app.use("/api" , bedrockRoutes)
+app.use("/api/" , bedrockRoutes)
 
 
 app.listen(PORT , ()=>{

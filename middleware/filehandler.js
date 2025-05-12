@@ -4,11 +4,18 @@ require('dotenv').config(); //
 
 
 exports.filehandler = async (req, res, next) => {
+
   try {
+    
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
-
+    if(req.params.id==='1'){
+      paramId=1
+    }
+    if(req.params.id==='2'){
+      paramId=2
+    }
     // Create S3 instance with credentials from .env file
     const s3 = new AWS.S3({
       accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -17,19 +24,19 @@ exports.filehandler = async (req, res, next) => {
     });
 
     const fileContent = fs.readFileSync(req.file.path);
-    
     console.log(process.env.AWS_S3_BUCKET_NAME);
+
+      const params = {
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
+        Key: `uploads/${paramId}/${req.file.filename}`,
+        Body: fileContent,
+        ContentType: req.file.mimetype,
+      };
     
-    const params = {
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
-      Key: `uploads/${req.file.filename}`,
-      Body: fileContent,
-      ContentType: req.file.mimetype,
-    };
 
     const s3Data = await s3.upload(params).promise();
     fs.unlinkSync(req.file.path); // Cleanup temp file
-    const formattedS3Url = `s3://${process.env.AWS_S3_BUCKET_NAME}/uploads/${req.file.filename}`;
+    const formattedS3Url = `s3://${process.env.AWS_S3_BUCKET_NAME}/uploads/${paramId}/${req.file.filename}`;
 
     console.log(s3Data.Location)
     req.S3url = formattedS3Url;
