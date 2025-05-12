@@ -37,7 +37,7 @@ const getJobInput = (s3url) => {
  * @param {Object} res - Express response object
  * @returns {Promise<Object>} Response with job status and results
  */
-const analyzeFile = async (req, res) => {
+const analyzeFile = async (req, res,next) => {
   try {
     // Initialize client and job input
     const client = createBedrockClient();
@@ -60,17 +60,17 @@ const analyzeFile = async (req, res) => {
       console.log(`Got result S3 URI: ${resultS3Uri}`);
       
       // Return the info even if we can't fetch the actual result
-      let resultContent = null;
-      
+    
       // Fetch the actual result content from S3
       try {
         resultContent = await fetchResultFromS3(resultS3Uri);
         console.log("Successfully fetched result from S3");
-        
-        return res.status(200).json({
-          message: "Data automation job completed successfully",
-          result: resultContent
-        });
+        req.extractedData=resultContent
+        // return res.status(200).json({
+        //   message: "Data automation job completed successfully",
+        //   result: resultContent
+        // });
+        next();
       } catch (s3Error) {
         console.error("Error fetching result from S3:", s3Error);
         
@@ -236,7 +236,7 @@ const fetchResultFromS3 = async (s3Uri) => {
     
     console.log(`Fetching result from S3 - Bucket: "${bucket}", Key: "${key}"`);
     
-    // Option 1: Use the same credentials as your Bedrock client
+  
     // This is the most reliable approach if Bedrock works but S3 doesn't
     const bedrock = createBedrockClient(); // Use your existing Bedrock client creation function
     const credentials = bedrock.config.credentials;
@@ -259,6 +259,7 @@ const fetchResultFromS3 = async (s3Uri) => {
     
     // Parse JSON
     const result = JSON.parse(bodyContents);
+    console.log(result.inference_result)
     return result.inference_result;
   } catch (error) {
     console.error(`Error fetching from S3: ${error}`);
